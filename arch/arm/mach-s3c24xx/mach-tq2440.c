@@ -107,7 +107,7 @@ static void __init tq2440_machine_init(void)
 	platform_add_devices(tq2440_devices, ARRAY_SIZE(tq2440_devices));
 }
 
-MACHINE_START(S3C2440, "TQ2440")
+MACHINE_START(TQ2440, "TQ2440")
 	.atag_offset	= 0x100,
 	.init_irq	= s3c24xx_init_irq,
 	.map_io		= tq2440_map_io,
