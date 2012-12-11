@@ -223,13 +223,6 @@ config MACH_QT2410
 	help
 	  Say Y here if you are using the Armzone QT2410
 
-config MACH_TQ2440
-  bool "TQ2440"
-  select S3C_DEV_USB_HOST
-  select S3C_DEV_NAND
-  help
-    TQ2440 Board
-
 config ARCH_SMDK2410
 	bool "SMDK2410/A9M2410"
 	select S3C24XX_SMDK
@@ -466,6 +459,14 @@ config ARCH_S3C2440
 	select S3C_DEV_NAND
 	help
 	  Say Y here if you are using the SMDK2440.
+
+config MACH_TQ2440
+  bool "TQ2440"
+  select ARCH_S3C2440
+  select S3C_DEV_USB_HOST
+  select S3C_DEV_NAND
+  help
+    TQ2440 Board
 
 config SMDK2440_CPU2440
 	bool "SMDK2440 with S3C2440 CPU module"

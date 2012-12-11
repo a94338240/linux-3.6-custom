@@ -36,6 +36,8 @@
 #include <plat/clock.h>
 #include <plat/devs.h>
 #include <plat/cpu.h>
+#include <mach/regs-gpio.h>
+#include <mach/leds-gpio.h>
 
 #include <plat/common-smdk.h>
 
@@ -70,51 +72,19 @@ static struct s3c2410_uartcfg tq2440_uartcfgs[] __initdata = {
 	}
 };
 
-/* LCD driver info */
-
-static struct s3c2410fb_display tq2440_lcd_cfg __initdata = {
-
-	.lcdcon5	= S3C2410_LCDCON5_FRM565 |
-			  S3C2410_LCDCON5_INVVLINE |
-			  S3C2410_LCDCON5_INVVFRAME |
-			  S3C2410_LCDCON5_PWREN |
-			  S3C2410_LCDCON5_HWSWP,
-
-	.type		= S3C2410_LCDCON1_TFT,
-
-	.width		= 240,
-	.height		= 320,
-
-	.pixclock	= 166667, /* HCLK 60 MHz, divisor 10 */
-	.xres		= 240,
-	.yres		= 320,
-	.bpp		= 16,
-	.left_margin	= 20,
-	.right_margin	= 8,
-	.hsync_len	= 4,
-	.upper_margin	= 8,
-	.lower_margin	= 7,
-	.vsync_len	= 4,
+static struct s3c24xx_led_platdata tq2440_led1_pdata = {
+	.name		= "s3c24xx_led",
+	.gpio		= S3C2410_GPB(7),
+	.flags		= S3C24XX_LEDF_ACTLOW | S3C24XX_LEDF_TRISTATE,
+	.def_trigger	= "mmc0",
 };
 
-static struct s3c2410fb_mach_info tq2440_fb_info __initdata = {
-	.displays	= &tq2440_lcd_cfg,
-	.num_displays	= 1,
-	.default_display = 0,
-
-#if 0
-	/* currently setup by downloader */
-	.gpccon		= 0xaa940659,
-	.gpccon_mask	= 0xffffffff,
-	.gpcup		= 0x0000ffff,
-	.gpcup_mask	= 0xffffffff,
-	.gpdcon		= 0xaa84aaa0,
-	.gpdcon_mask	= 0xffffffff,
-	.gpdup		= 0x0000faff,
-	.gpdup_mask	= 0xffffffff,
-#endif
-
-	.lpcsel		= ((0xCE6) & ~7) | 1<<4,
+static struct platform_device tq2440_led1 = {
+	.name		= "s3c24xx_led",
+	.id		= 1,
+	.dev		= {
+		.platform_data	= &tq2440_led1_pdata,
+	},
 };
 
 static struct platform_device *tq2440_devices[] __initdata = {
@@ -123,9 +93,10 @@ static struct platform_device *tq2440_devices[] __initdata = {
 	&s3c_device_wdt,
 	&s3c_device_i2c0,
 	&s3c_device_iis,
+  &tq2440_led1
 };
 
-static void __init smdk2440_map_io(void)
+static void __init tq2440_map_io(void)
 {
 	s3c24xx_init_clocks(12000000);
 	s3c24xx_init_uarts(tq2440_uartcfgs, ARRAY_SIZE(tq2440_uartcfgs));
@@ -133,11 +104,7 @@ static void __init smdk2440_map_io(void)
 
 static void __init tq2440_machine_init(void)
 {
-	s3c24xx_fb_set_platdata(&tq2440_fb_info);
-	s3c_i2c0_set_platdata(NULL);
-
 	platform_add_devices(tq2440_devices, ARRAY_SIZE(tq2440_devices));
-	tq_machine_init();
 }
 
 MACHINE_START(S3C2440, "TQ2440")
