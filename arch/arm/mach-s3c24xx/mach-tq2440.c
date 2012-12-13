@@ -89,15 +89,14 @@ static struct platform_device tq2440_led1 = {
 
 static struct platform_device *tq2440_devices[] __initdata = {
 	&s3c_device_ohci,
-	&s3c_device_lcd,
 	&s3c_device_wdt,
 	&s3c_device_i2c0,
-	&s3c_device_iis,
   &tq2440_led1
 };
 
 static void __init tq2440_map_io(void)
 {
+  s3c24xx_init_io(NULL, 0);
 	s3c24xx_init_clocks(12000000);
 	s3c24xx_init_uarts(tq2440_uartcfgs, ARRAY_SIZE(tq2440_uartcfgs));
 }
