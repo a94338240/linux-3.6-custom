@@ -41,6 +41,13 @@
 
 #include <plat/common-smdk.h>
 
+#include <plat/nand.h>
+
+#include <linux/mtd/mtd.h>
+#include <linux/mtd/nand.h>
+#include <linux/mtd/nand_ecc.h>
+#include <linux/mtd/partitions.h>
+
 #include "common.h"
 
 #define UCON S3C2410_UCON_DEFAULT | S3C2410_UCON_UCLK
@@ -76,7 +83,7 @@ static struct s3c24xx_led_platdata tq2440_led1_pdata = {
 	.name		= "s3c24xx_led",
 	.gpio		= S3C2410_GPB(7),
 	.flags		= S3C24XX_LEDF_ACTLOW | S3C24XX_LEDF_TRISTATE,
-	.def_trigger	= "mmc0",
+	.def_trigger	= "nand-disk",
 };
 
 static struct platform_device tq2440_led1 = {
@@ -87,10 +94,52 @@ static struct platform_device tq2440_led1 = {
 	},
 };
 
+static struct mtd_partition tq2440_default_nand_part[] __initdata = {
+	[0] = {
+		.name	= "u-boot",
+		.size	= 0x00200000,
+		.offset	= 0,
+	},
+	[1] = {
+		.name	= "kernel",
+		/* 5 megabytes, for a kernel with no modules
+		 * or a uImage with a ramdisk attached */
+		.size	= 0x00300000,
+		.offset	= 0x00200000,
+	},
+	[2] = {
+		.name	= "root",
+		.offset	= 0x00500000,
+		.size	= 0x00500000,
+	},
+};
+
+static struct s3c2410_nand_set tq2440_nand_sets[] __initdata = {
+	[0] = {
+		.name		= "nand",
+		.nr_chips	= 1,
+		.nr_partitions	= ARRAY_SIZE(tq2440_default_nand_part),
+		.partitions	= tq2440_default_nand_part,
+		.flash_bbt 	= 1, /* we use u-boot to create a BBT */
+	},
+};
+
+static struct s3c2410_platform_nand tq2440_nand_info __initdata = {
+	.tacls		= 0,
+	.twrph0		= 25,
+	.twrph1		= 15,
+	.nr_sets	= ARRAY_SIZE(tq2440_nand_sets),
+	.sets		= tq2440_nand_sets,
+	.ignore_unset_ecc = 1,
+};
+
 static struct platform_device *tq2440_devices[] __initdata = {
 	&s3c_device_ohci,
 	&s3c_device_wdt,
 	&s3c_device_i2c0,
+  &s3c_device_sdi,
+  &s3c_device_nand,
+  &samsung_asoc_dma,
   &tq2440_led1
 };
 
@@ -103,6 +152,9 @@ static void __init tq2440_map_io(void)
 
 static void __init tq2440_machine_init(void)
 {
+	s3c_nand_set_platdata(&tq2440_nand_info);
+	s3c_i2c0_set_platdata(NULL);
+
 	platform_add_devices(tq2440_devices, ARRAY_SIZE(tq2440_devices));
 }
 
