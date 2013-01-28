@@ -22,6 +22,7 @@
 
 #include "scsi_priv.h"
 #include "scsi_logging.h"
+#include "sd.h"
 
 static struct device_type scsi_dev_type;
 
@@ -571,6 +572,43 @@ store_rescan_field (struct device *dev, struct device_attribute *attr,
 }
 static DEVICE_ATTR(rescan, S_IWUSR, NULL, store_rescan_field);
 
+static ssize_t
+show_write_protect_field(struct device *dev, struct device_attribute *attr, 
+                         char *buf)
+{
+  extern struct scsi_disk *scsi_disk_get_from_dev(struct device *dev);
+  extern void
+    sd_read_write_protect_flag(struct scsi_disk *sdkp, unsigned char *buffer);
+  extern void scsi_disk_put(struct scsi_disk *sdkp);
+	struct scsi_disk *sdkp = scsi_disk_get_from_dev(dev);
+	struct scsi_device *sdp = sdkp->device;
+	unsigned char *buffer;
+
+	if (sdkp) {
+    if (!scsi_device_online(sdp))
+      goto out;
+    buffer = kmalloc(SD_BUF_SIZE, GFP_KERNEL);
+    if (!buffer) {
+      sd_printk(KERN_WARNING, sdkp, "store_write_protect_field: Memory "
+                "allocation failure.\n");
+      goto out;
+    }
+
+    sd_read_write_protect_flag(sdkp, buffer);
+    kfree(buffer);
+    buf[0] = (char)(sdkp->write_prot + 0x30);
+    buf[1] = 0;
+
+		scsi_disk_put(sdkp);
+	}
+  return 2;
+ out:
+  return -EINVAL;
+}
+
+static DEVICE_ATTR(write_protect, S_IRUGO,
+                   show_write_protect_field, NULL);
+
 static void sdev_store_delete_callback(struct device *dev)
 {
 	scsi_remove_device(to_scsi_device(dev));
@@ -725,6 +763,7 @@ static struct attribute *scsi_sdev_attrs[] = {
 	&dev_attr_rescan.attr,
 	&dev_attr_delete.attr,
 	&dev_attr_state.attr,
+  &dev_attr_write_protect.attr,
 	&dev_attr_timeout.attr,
 	&dev_attr_iocounterbits.attr,
 	&dev_attr_iorequest_cnt.attr,

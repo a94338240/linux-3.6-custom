@@ -533,7 +533,7 @@ static struct scsi_disk *scsi_disk_get(struct gendisk *disk)
 	return sdkp;
 }
 
-static struct scsi_disk *scsi_disk_get_from_dev(struct device *dev)
+struct scsi_disk *scsi_disk_get_from_dev(struct device *dev)
 {
 	struct scsi_disk *sdkp;
 
@@ -545,7 +545,7 @@ static struct scsi_disk *scsi_disk_get_from_dev(struct device *dev)
 	return sdkp;
 }
 
-static void scsi_disk_put(struct scsi_disk *sdkp)
+void scsi_disk_put(struct scsi_disk *sdkp)
 {
 	struct scsi_device *sdev = sdkp->device;
 
@@ -2233,7 +2233,7 @@ sd_do_mode_sense(struct scsi_device *sdp, int dbd, int modepage,
  * read write protect setting, if possible - called only in sd_revalidate_disk()
  * called with buffer of length SD_BUF_SIZE
  */
-static void
+void
 sd_read_write_protect_flag(struct scsi_disk *sdkp, unsigned char *buffer)
 {
 	int res;
