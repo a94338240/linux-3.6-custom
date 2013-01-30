@@ -110,7 +110,7 @@ static struct mtd_partition tq2440_default_nand_part[] __initdata = {
 	[2] = {
 		.name	= "root",
 		.offset	= 0x00500000,
-		.size	= 0x00500000,
+		.size	= 0x00000000,
 	},
 };
 
